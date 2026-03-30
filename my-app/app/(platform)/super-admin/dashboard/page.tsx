@@ -22,21 +22,47 @@ export default function SuperAdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Cases detail card */}
-        <div className="col-span-2 bg-[#984c1f] rounded-2xl p-6 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10" />
-          <div className="relative z-10 flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-white/80 mb-1">Total Cases</p>
-              <p className="text-4xl font-bold">142</p>
-              <div className="flex items-center gap-3 mt-4 text-xs font-semibold">
-                <span className="bg-white/20 px-2 py-1 rounded-lg">45 Running</span>
-                <span className="bg-white/20 px-2 py-1 rounded-lg">82 Disposed Off</span>
-                <span className="bg-white/20 px-2 py-1 rounded-lg">15 Closed</span>
+        {/* Premium Cases Detail Card */}
+        <div className="col-span-2 relative bg-gradient-to-br from-[#984c1f] via-[#7a3c18] to-[#4a220a] rounded-3xl p-7 text-white shadow-xl shadow-[#984c1f]/20 overflow-hidden group">
+          {/* Decorative Background Elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-white/10 transition-colors duration-700 ease-in-out" />
+          <div className="absolute bottom-0 left-0 w-40 h-40 bg-black/20 rounded-full blur-2xl -ml-10 -mb-10" />
+          <div className="absolute top-1/2 left-1/2 w-full h-full bg-gradient-to-t from-black/20 to-transparent transform -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+          
+          <div className="relative z-10 flex flex-col h-full justify-between">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                  <p className="text-xs font-bold text-white/80 uppercase tracking-widest">Total Cases Portfolio</p>
+                </div>
+                <div className="flex items-baseline gap-3">
+                  <p className="text-5xl font-extrabold tracking-tight drop-shadow-sm">142</p>
+                  <span className="text-xs font-bold text-emerald-300 bg-emerald-400/10 px-2.5 py-1 rounded-full border border-emerald-400/20 backdrop-blur-md">
+                    +12% this month
+                  </span>
+                </div>
+              </div>
+              <div className="w-14 h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 shadow-[0_8px_16px_rgba(0,0,0,0.2)] group-hover:scale-105 group-hover:bg-white/15 transition-all duration-500 ease-out p-3">
+                <Briefcase className="w-full h-full text-white/90 drop-shadow-md" strokeWidth={1.5} />
               </div>
             </div>
-            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-              <Briefcase className="w-6 h-6 text-white" />
+
+            {/* Status Badges - Glassmorphism */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: 'Running', count: '45', color: 'text-blue-100', dotBg: 'bg-blue-400', bg: 'bg-white/10', border: 'border-white/10' },
+                { label: 'Disposed Off', count: '82', color: 'text-emerald-100', dotBg: 'bg-emerald-400', bg: 'bg-white/10', border: 'border-white/10' },
+                { label: 'Closed', count: '15', color: 'text-gray-200', dotBg: 'bg-gray-400', bg: 'bg-white/5', border: 'border-white/5' }
+              ].map((status) => (
+                <div key={status.label} className={`flex flex-col p-3.5 rounded-2xl border backdrop-blur-md ${status.bg} ${status.border} hover:bg-white/20 transition-all duration-300 shadow-sm`}>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${status.dotBg}`} />
+                    <span className="text-[10px] font-bold text-white/70 uppercase tracking-wider">{status.label}</span>
+                  </div>
+                  <span className={`text-2xl font-extrabold ${status.color} leading-none tracking-tight`}>{status.count}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>
