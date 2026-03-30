@@ -101,7 +101,8 @@ export default function Sidebar() {
         {/* User Management — collapsible */}
         <div>
           <button
-            onClick={() => setUserMenuOpen((o) => !o)}
+            type="button"
+            onClick={(e) => { e.preventDefault(); setUserMenuOpen((o) => !o); }}
             className={navRow(userSectionActive) + ' w-full'}
           >
             {userSectionActive && (
