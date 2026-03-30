@@ -2,16 +2,17 @@
 
 import { usePathname } from 'next/navigation';
 import { Bell, Search, LogOut } from 'lucide-react';
+import { resolveRouteMeta } from '@/components/platform/route-meta';
 
-const pageTitles: Record<string, { title: string; sub: string }> = {
-  '/partner-manager/dashboard': { title: 'Dashboard',    sub: 'Your assigned firms and recent activity.' },
-  '/partner-manager/firms':     { title: 'Firms',        sub: 'Manage and onboard law firms.' },
-  '/partner-manager/settings':  { title: 'Settings',     sub: 'Your account preferences.' },
-};
+const pageTitles = [
+  { match: '/partner-manager/dashboard', title: 'Dashboard', sub: 'Your assigned firms and recent activity.' },
+  { match: '/partner-manager/firms', title: 'Firms', sub: 'Manage assigned firms, onboarding, and plan context.' },
+  { match: '/partner-manager/settings', title: 'Settings', sub: 'Your account preferences.' },
+];
 
 export default function PartnerManagerTopbar() {
   const pathname = usePathname();
-  const page = pageTitles[pathname] ?? { title: 'Partner Manager', sub: '' };
+  const page = resolveRouteMeta(pathname, pageTitles, { title: 'Partner Manager', sub: '' });
 
   return (
     <header className="h-[72px] bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0 sticky top-0 z-10">

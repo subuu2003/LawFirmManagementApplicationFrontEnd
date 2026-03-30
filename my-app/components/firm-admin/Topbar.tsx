@@ -1,15 +1,26 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Bell, Search, LogOut } from 'lucide-react';
+import { Bell, Search } from 'lucide-react';
+import { resolveRouteMeta } from '@/components/platform/route-meta';
+
+const pageTitles = [
+  { match: '/firm-admin/dashboard', title: 'Admin Dashboard', sub: 'Manage cases and coordinate firm operations.' },
+  { match: '/firm-admin/cases', title: 'Cases', sub: 'Assign advocates, monitor hearings, and review matter status.' },
+  { match: '/firm-admin/documents', title: 'Documents', sub: 'Review uploaded files, categories, and version history.' },
+  { match: '/firm-admin/drafts', title: 'Drafts', sub: 'Track draft submissions, approvals, and revisions.' },
+  { match: '/firm-admin/invoices', title: 'Invoices', sub: 'Generate invoices and monitor payment collection.' },
+  { match: '/firm-admin/messaging', title: 'Messaging', sub: 'Coordinate internal updates and client responses.' },
+];
 
 export default function FirmAdminTopbar() {
   const pathname = usePathname();
+  const page = resolveRouteMeta(pathname, pageTitles, { title: 'Admin Dashboard', sub: 'Manage cases and coordinate firm operations.' });
   return (
     <header className="h-[72px] bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0 sticky top-0 z-10">
       <div>
-        <h1 className="text-base font-bold text-[#2a4365] leading-tight">Admin Dashboard</h1>
-        <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">Manage cases and coordinate firm operations.</p>
+        <h1 className="text-base font-bold text-[#2a4365] leading-tight">{page.title}</h1>
+        <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">{page.sub}</p>
       </div>
       <div className="flex items-center gap-2">
         <div className="hidden md:flex items-center gap-2 bg-[#f7f8fa] border border-gray-100 rounded-xl px-3 py-2 w-56">

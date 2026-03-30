@@ -2,20 +2,21 @@
 
 import { usePathname } from 'next/navigation';
 import { Bell, Search, LogOut } from 'lucide-react';
+import { resolveRouteMeta } from '@/components/platform/route-meta';
 
-const pageTitles: Record<string, { title: string; sub: string }> = {
-  '/platform-owner':           { title: 'Dashboard',       sub: 'Welcome back — here\'s what\'s happening on your platform today.' },
-  '/platform-owner/analytics': { title: 'Analytics',       sub: 'Platform-wide insights and performance metrics.' },
-  '/platform-owner/billing':   { title: 'Billing',         sub: 'Manage platform billing and payments.' },
-  '/platform-owner/settings':  { title: 'Settings',        sub: 'Configure platform preferences.' },
-  '/platform-owner/firms':     { title: 'Law Firms',       sub: 'Manage all registered law firms on the platform.' },
-  '/platform-owner/partners':  { title: 'Partner Managers',sub: 'Manage partner managers and their assigned firms.' },
-  '/platform-owner/sales':     { title: 'Sales Persons',   sub: 'Manage sales personnel and referral system.' },
-};
+const pageTitles = [
+  { match: '/platform-owner', title: 'Dashboard', sub: "Welcome back, here's what's happening on your platform today." },
+  { match: '/platform-owner/analytics', title: 'Analytics', sub: 'Platform-wide insights and performance metrics.' },
+  { match: '/platform-owner/billing', title: 'Billing', sub: 'Manage platform billing and payments.' },
+  { match: '/platform-owner/settings', title: 'Settings', sub: 'Configure platform preferences.' },
+  { match: '/platform-owner/firms', title: 'Law Firms', sub: 'Manage law firms, onboarding, and subscription context.' },
+  { match: '/platform-owner/partners', title: 'Partner Managers', sub: 'Manage partner managers and assigned firms.' },
+  { match: '/platform-owner/sales', title: 'Sales Persons', sub: 'Manage sales personnel, referrals, and lead ownership.' },
+];
 
 export default function Topbar() {
   const pathname = usePathname();
-  const page = pageTitles[pathname] ?? { title: 'Platform Owner', sub: '' };
+  const page = resolveRouteMeta(pathname, pageTitles, { title: 'Platform Owner', sub: '' });
 
   return (
     <header className="h-[72px] bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0 sticky top-0 z-10">

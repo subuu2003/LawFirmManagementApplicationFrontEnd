@@ -2,13 +2,23 @@
 
 import { usePathname } from 'next/navigation';
 import { Bell, Search } from 'lucide-react';
+import { resolveRouteMeta } from '@/components/platform/route-meta';
+
+const pageTitles = [
+  { match: '/paralegal/dashboard', title: 'Paralegal Dashboard', sub: 'Support case prep and draft petition reviews.' },
+  { match: '/paralegal/cases', title: 'Assigned Cases', sub: 'Track filings, hearing tasks, and document readiness.' },
+  { match: '/paralegal/drafting', title: 'Drafting Assist', sub: 'Prepare support drafts for advocate review.' },
+  { match: '/paralegal/calendar', title: 'Schedules', sub: 'Manage case schedules, hearings, and prep reminders.' },
+];
 
 export default function ParalegalTopbar() {
+  const pathname = usePathname();
+  const page = resolveRouteMeta(pathname, pageTitles, { title: 'Paralegal Dashboard', sub: 'Support case prep and draft petition reviews.' });
   return (
     <header className="h-[72px] bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0 sticky top-0 z-10">
       <div>
-        <h1 className="text-base font-bold text-[#0a6c74] leading-tight">Paralegal Dashboard</h1>
-        <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">Support case prep and draft petition reviews.</p>
+        <h1 className="text-base font-bold text-[#0a6c74] leading-tight">{page.title}</h1>
+        <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">{page.sub}</p>
       </div>
       <div className="flex items-center gap-2">
         <div className="hidden md:flex items-center gap-2 bg-[#f7f8fa] border border-gray-100 rounded-xl px-3 py-2 w-56">
