@@ -2,19 +2,21 @@
 
 import { usePathname } from 'next/navigation';
 import { Bell, Search, LogOut } from 'lucide-react';
+import { resolveRouteMeta } from '@/components/platform/route-meta';
 
-const pageTitles: Record<string, { title: string; sub: string }> = {
-  '/super-admin/dashboard': { title: 'Firm Dashboard', sub: 'Overview of your law firm.' },
-  '/super-admin/cases':     { title: 'Cases',          sub: 'Manage all firm cases.' },
-  '/super-admin/team':      { title: 'Team',           sub: 'Manage advocates, admins, and paralegals.' },
-  '/super-admin/clients':   { title: 'Clients',        sub: 'Manage clients and their profiles.' },
-  '/super-admin/billing':   { title: 'Billing',        sub: 'View invoices and manage payments.' },
-  '/super-admin/reports':   { title: 'Reports',        sub: 'Generate firm performance reports.' },
-};
+const pageTitles = [
+  { match: '/super-admin/dashboard', title: 'Firm Dashboard', sub: 'Overview of your law firm.' },
+  { match: '/super-admin/cases', title: 'Cases', sub: 'Manage all firm cases, filings, and lifecycle stages.' },
+  { match: '/super-admin/team', title: 'Team', sub: 'Manage advocates, admins, and paralegals.' },
+  { match: '/super-admin/clients', title: 'Clients', sub: 'Manage clients and their profiles.' },
+  { match: '/super-admin/billing', title: 'Billing', sub: 'View invoices and manage payments.' },
+  { match: '/super-admin/reports', title: 'Reports', sub: 'Generate firm performance reports.' },
+  { match: '/super-admin/settings', title: 'Settings', sub: 'Manage firm profile and verification settings.' },
+];
 
 export default function SuperAdminTopbar() {
   const pathname = usePathname();
-  const page = pageTitles[pathname] ?? { title: 'Super Admin', sub: 'Firm Management' };
+  const page = resolveRouteMeta(pathname, pageTitles, { title: 'Super Admin', sub: 'Firm Management' });
 
   return (
     <header className="h-[72px] bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0 sticky top-0 z-10">

@@ -1,14 +1,25 @@
 'use client';
 
+import { Bell, Search } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { Bell, Search, LogOut } from 'lucide-react';
+import { resolveRouteMeta } from '@/components/platform/route-meta';
+
+const pageTitles = [
+  { match: '/advocate/dashboard', title: 'Advocate Dashboard', sub: 'Manage your case files, drafts, and client meetings.' },
+  { match: '/advocate/cases', title: 'Assigned Cases', sub: 'Review matter status, evidence, and next hearing tasks.' },
+  { match: '/advocate/drafting', title: 'Drafting', sub: 'Prepare petitions, arguments, and revision-ready drafts.' },
+  { match: '/advocate/calendar', title: 'Calendar', sub: 'Track hearings, deadlines, and court preparation tasks.' },
+  { match: '/advocate/chat', title: 'Client Chat', sub: 'Manage direct client communication and case follow-ups.' },
+];
 
 export default function AdvocateTopbar() {
+  const pathname = usePathname();
+  const page = resolveRouteMeta(pathname, pageTitles, { title: 'Advocate Dashboard', sub: 'Manage your case files, drafts, and client meetings.' });
   return (
     <header className="h-[72px] bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0 sticky top-0 z-10">
       <div>
-        <h1 className="text-base font-bold text-[#4a1c40] leading-tight">Advocate Dashboard</h1>
-        <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">Manage your case files, drafts, and client meetings.</p>
+        <h1 className="text-base font-bold text-[#4a1c40] leading-tight">{page.title}</h1>
+        <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">{page.sub}</p>
       </div>
       <div className="flex items-center gap-2">
         <div className="hidden md:flex items-center gap-2 bg-[#f7f8fa] border border-gray-100 rounded-xl px-3 py-2 w-56">

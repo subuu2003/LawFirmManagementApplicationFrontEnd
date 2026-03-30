@@ -1,13 +1,26 @@
 'use client';
 
 import { Bell } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { resolveRouteMeta } from '@/components/platform/route-meta';
+
+const pageTitles = [
+  { match: '/client/dashboard', title: 'Welcome, Jane Doe', sub: 'Track your case progress and messages securely.' },
+  { match: '/client/cases', title: 'My Cases', sub: 'Follow case progress, milestones, and hearing dates.' },
+  { match: '/client/documents', title: 'Documents', sub: 'Download shared documents, orders, and filings.' },
+  { match: '/client/calendar', title: 'Hearings', sub: 'Review upcoming hearings and key dates.' },
+  { match: '/client/invoices', title: 'Invoices', sub: 'Review invoices, payment status, and due amounts.' },
+  { match: '/client/messaging', title: 'Messages', sub: 'Send updates and questions to your legal team.' },
+];
 
 export default function ClientTopbar() {
+  const pathname = usePathname();
+  const page = resolveRouteMeta(pathname, pageTitles, { title: 'Welcome, Jane Doe', sub: 'Track your case progress and messages securely.' });
   return (
     <header className="h-[72px] bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0 sticky top-0 z-10">
       <div>
-        <h1 className="text-base font-bold text-[#1f2937] leading-tight">Welcome, Jane Doe</h1>
-        <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">Track your case progress and messages securely.</p>
+        <h1 className="text-base font-bold text-[#1f2937] leading-tight">{page.title}</h1>
+        <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">{page.sub}</p>
       </div>
       <div className="flex items-center gap-4">
         <button className="relative w-9 h-9 rounded-xl bg-[#f7f8fa] border border-gray-100 flex items-center justify-center hover:bg-gray-100 transition-colors">
