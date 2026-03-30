@@ -1,11 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import {
-  motion, AnimatePresence,
-  useScroll, useTransform, useSpring, useMotionValue,
-} from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import {
   Scale, ArrowRight, Play, Menu, X, Users, Brain, Calendar,
   CreditCard, Upload, FileSignature, Clock, Shield, Zap,
@@ -64,12 +61,7 @@ function Visual1() {
           </div>
           <div className="flex flex-wrap gap-1.5">
             {names.map((n) => (
-              <motion.span
-                key={n}
-                whileHover={{ scale: 1.08, backgroundColor: "#eef2ff" }}
-                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                className="text-[11px] px-2 py-0.5 bg-gray-50 border border-gray-100 rounded-full text-gray-600 cursor-default"
-              >{n}</motion.span>
+              <span key={n} className="text-[11px] px-2 py-0.5 bg-gray-50 border border-gray-100 rounded-full text-gray-600">{n}</span>
             ))}
           </div>
         </div>
@@ -112,10 +104,10 @@ function Visual2() {
   return (
     <motion.div
       key="v2"
-      initial={{ opacity: 0, y: 22, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -22, scale: 0.97 }}
-      transition={{ duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -18 }}
+      transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
       className="absolute inset-0 rounded-2xl overflow-hidden bg-gradient-to-br from-[#0a1a2e] via-[#0e2340] to-[#1a3a5c] p-7 shadow-2xl"
     >
       <div className="flex items-center gap-3 mb-5">
@@ -203,10 +195,10 @@ function Visual3() {
   return (
     <motion.div
       key="v3"
-      initial={{ opacity: 0, y: 22, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -22, scale: 0.97 }}
-      transition={{ duration: 0.55, ease: [0.32, 0.72, 0, 1] }}
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -18 }}
+      transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
       className="absolute inset-0 rounded-2xl overflow-hidden bg-white border border-gray-100 p-7 shadow-xl shadow-[#0e2340]/5"
     >
       <div className="flex items-center justify-between mb-4">
@@ -250,16 +242,11 @@ function Visual3() {
       <div className="space-y-2">
         <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Upcoming</p>
         {events.slice(0, 3).map(({ day, label, type }) => (
-          <motion.div
-            key={day}
-            whileHover={{ x: 3 }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2 cursor-default"
-          >
+          <div key={day} className="flex items-center gap-3 bg-gray-50 rounded-lg px-3 py-2">
             <span className={`w-2 h-2 rounded-full shrink-0 ${typeColors[type]}`} />
             <span className="text-xs text-gray-700 flex-1">{label}</span>
             <span className="text-[11px] font-semibold text-[#0e2340]">Mar {day}</span>
-          </motion.div>
+          </div>
         ))}
       </div>
 
@@ -292,34 +279,57 @@ export default function LandingPage() {
   const [activeVisual, setActiveVisual] = useState(0);
   const [scrolled, setScrolled] = useState(false);
 
+  // ── Scroll & Mouse Motion Values ──────────────────────────────────────────
+  const featureSectionRef = useRef<HTMLElement>(null);
+  const scrollProgress = useMotionValue(0);
+  
+  const rawNudge = useTransform(scrollProgress, [0, 0.5, 1], [80, 0, -80]);
+  const cardY = useSpring(rawNudge, { stiffness: 45, damping: 18, mass: 1.2 });
+
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const smoothMouseX = useSpring(mouseX, { stiffness: 80, damping: 20, mass: 0.8 });
+  const smoothMouseY = useSpring(mouseY, { stiffness: 80, damping: 20, mass: 0.8 });
+
+  const rotateX = useTransform(smoothMouseY, [-200, 200], [5, -5]);
+  const rotateY = useTransform(smoothMouseX, [-200, 200], [-5, 5]);
+  const translateX = useTransform(smoothMouseX, [-200, 200], [-10, 10]);
+  const translateY = useTransform(smoothMouseY, [-200, 200], [-10, 10]);
+
+  useEffect(() => {
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (window.innerWidth >= 1024 && featureSectionRef.current) {
+            const rect = featureSectionRef.current.getBoundingClientRect();
+            const progress = (-rect.top) / (rect.height - window.innerHeight);
+            const clamped = Math.min(1, Math.max(0, progress));
+            scrollProgress.set(clamped);
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [scrollProgress]);
+
   // ── Sticky scroll: one ref per text section ──────────────────────────────
   const section1Ref = useRef<HTMLDivElement>(null);
   const section2Ref = useRef<HTMLDivElement>(null);
   const section3Ref = useRef<HTMLDivElement>(null);
   const stickyRefs = [section1Ref, section2Ref, section3Ref];
-
-  // Wrapper ref for the whole two-col sticky area (used for scroll progress)
-  const stickyWrapRef = useRef<HTMLDivElement>(null);
-  // Ref on the <section> itself — gives full scrollable height for progress calc
-  const featureSectionRef = useRef<HTMLElement>(null);
-
-  // ── Mouse parallax state for sticky card ─────────────────────────────────
-  const cardRef = useRef<HTMLDivElement>(null);
-  const rawMouseX = useMotionValue(0);
-  const rawMouseY = useMotionValue(0);
-  const springConfig = { stiffness: 80, damping: 20, mass: 0.8 };
-  const mouseX = useSpring(rawMouseX, springConfig);
-  const mouseY = useSpring(rawMouseY, springConfig);
-
-  // ── Scroll progress through the sticky section ────────────────────────────
-  const scrollProgress = useMotionValue(0);
-  // scrollNudge moves the INNER card element only (not the sticky wrapper)
-  // so position:sticky is never disrupted.
-  const rawNudge = useTransform(scrollProgress, [0, 0.5, 1], [-20, 0, 20]);
-  const scrollNudge = useSpring(rawNudge, { stiffness: 48, damping: 20, mass: 1 });
-  const rawScale = useTransform(scrollProgress, [0, 0.5, 1], [1, 1.016, 1]);
-  const cardScale = useSpring(rawScale, { stiffness: 60, damping: 18 });
-  const shadowOpacity = useTransform(scrollProgress, [0, 0.5, 1], [0.05, 0.16, 0.07]);
 
   // Rock-solid observer: fires on the element whose centre is closest to the
   // viewport midpoint. Uses rootMargin to create a narrow horizontal "stripe"
@@ -332,9 +342,15 @@ export default function LandingPage() {
       if (!ref.current) return;
       const obs = new IntersectionObserver(
         ([entry]) => {
+          // Only set active when this section IS intersecting; never clear it.
+          // The last section to become intersecting wins — exactly what we want.
           if (entry.isIntersecting) setActiveVisual(i);
         },
-        { rootMargin: "-42% 0px -42% 0px", threshold: 0 }
+        {
+          // A narrow stripe in the vertical centre of the viewport.
+          rootMargin: "-45% 0px -45% 0px",
+          threshold: 0,
+        }
       );
       obs.observe(ref.current);
       observers.push(obs);
@@ -342,41 +358,6 @@ export default function LandingPage() {
 
     return () => observers.forEach((obs) => obs.disconnect());
   }, []);
-
-  // Track scroll progress within the features section
-  useEffect(() => {
-    const update = () => {
-      const el = featureSectionRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      // scrolled = how far past the top edge we are
-      // total scrollable = section height - viewport height
-      const scrolled = -rect.top;
-      const total = rect.height - window.innerHeight;
-      const progress = total > 0 ? Math.min(1, Math.max(0, scrolled / total)) : 0;
-      scrollProgress.set(progress);
-    };
-    window.addEventListener("scroll", update, { passive: true });
-    update();
-    return () => window.removeEventListener("scroll", update);
-  }, [scrollProgress]);
-
-  // Mouse parallax listeners on sticky card
-  useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    const handleMove = (e: MouseEvent) => {
-      const rect = el.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      rawMouseX.set(((e.clientX - cx) / rect.width) * 18);
-      rawMouseY.set(((e.clientY - cy) / rect.height) * 12);
-    };
-    const handleLeave = () => { rawMouseX.set(0); rawMouseY.set(0); };
-    el.addEventListener("mousemove", handleMove);
-    el.addEventListener("mouseleave", handleLeave);
-    return () => { el.removeEventListener("mousemove", handleMove); el.removeEventListener("mouseleave", handleLeave); };
-  }, [rawMouseX, rawMouseY]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -386,13 +367,6 @@ export default function LandingPage() {
 
   const visuals = [Visual1, Visual2, Visual3];
   const ActiveVisual = visuals[activeVisual];
-
-  // Derived motion values for the sticky card parallax (must be at hook level)
-  const cardRotateX = useTransform(mouseY, [-12, 12], [2, -2]);
-  const cardRotateY = useTransform(mouseX, [-18, 18], [-3, 3]);
-  const cardTranslateX = useTransform(mouseX, [-18, 18], [-5, 5]);
-  const cardTranslateY = useTransform(mouseY, [-12, 12], [-3, 3]);
-  const shimmerOpacity = useTransform(scrollProgress, [0, 0.25, 1], [0, 0.04, 0]);
 
   const features = [
     {
@@ -416,7 +390,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
+    <div className="min-h-screen bg-white overflow-x-clip">
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap');
 
@@ -788,104 +762,54 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
-          {/* Two-col layout — stickyWrapRef wraps both cols for scroll progress tracking */}
-          <div ref={stickyWrapRef} className="grid lg:grid-cols-[1fr_1fr] gap-20 lg:gap-28 items-start">
+          <div className="grid lg:grid-cols-[1fr_1fr] gap-20 lg:gap-28">
 
-            {/* LEFT — sticky visual with mouse parallax + scroll sync */}
-            {/* NOTE: outer wrapper is plain div — motion transforms here break position:sticky */}
-            <div
-              ref={cardRef}
-              className="hidden lg:block"
-            >
+            {/* LEFT — sticky visual */}
+            <div className="hidden lg:block">
               <div className="sticky top-24">
-                {/* Indicator dots — animated width */}
+                {/* Indicator dots */}
                 <div className="flex gap-2 mb-5">
                   {features.map((_, i) => (
-                    <motion.button
+                    <button
                       key={i}
                       onClick={() => stickyRefs[i].current?.scrollIntoView({ behavior: "smooth", block: "center" })}
-                      animate={{
-                        width: activeVisual === i ? 32 : 12,
-                        backgroundColor: activeVisual === i ? "#c9a96e" : "#e5e7eb",
-                      }}
-                      transition={{ type: "spring", stiffness: 400, damping: 28 }}
-                      className="h-1.5 rounded-full cursor-pointer"
-                      whileHover={{ opacity: 0.75 }}
+                      className={`h-1.5 rounded-full transition-all duration-400 ${activeVisual === i ? "w-8 bg-[var(--gold)]" : "w-3 bg-gray-200 hover:bg-gray-300"}`}
                     />
                   ))}
                 </div>
 
-                {/* Scroll progress bar */}
-                <div className="w-full h-[2px] bg-gray-100 rounded-full mb-4 overflow-hidden">
-                  <motion.div
-                    className="h-full rounded-full"
-                    style={{
-                      scaleX: scrollProgress,
-                      transformOrigin: "left",
-                      background: "linear-gradient(90deg, #0e2340, #c9a96e)",
-                    }}
-                  />
+                {/* Visual card container */}
+                <div className="relative h-[500px]">
+                  <motion.div style={{ y: cardY }} className="w-full h-full">
+                    <motion.div 
+                      style={{ rotateX, rotateY, translateX, translateY }} 
+                      className="w-full h-full"
+                      onMouseMove={(e) => {
+                        if (window.innerWidth < 1024) return;
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const centerX = rect.left + rect.width / 2;
+                        const centerY = rect.top + rect.height / 2;
+                        mouseX.set(e.clientX - centerX);
+                        mouseY.set(e.clientY - centerY);
+                      }}
+                      onMouseLeave={() => {
+                        if (window.innerWidth < 1024) return;
+                        mouseX.set(0);
+                        mouseY.set(0);
+                      }}
+                    >
+                      <AnimatePresence mode="wait">
+                        <ActiveVisual key={activeVisual} />
+                      </AnimatePresence>
+                    </motion.div>
+                  </motion.div>
                 </div>
-
-                {/* Card with 3-D mouse parallax + scroll-driven nudge */}
-                <motion.div
-                  style={{
-                    rotateX: cardRotateX,
-                    rotateY: cardRotateY,
-                    translateX: cardTranslateX,
-                    translateY: cardTranslateY,
-                    y: scrollNudge,
-                    scale: cardScale,
-                    transformStyle: "preserve-3d",
-                    perspective: 800,
-                  }}
-                  className="relative"
-                >
-                  {/* Scroll-driven shadow bloom */}
-                  <motion.div
-                    style={{ opacity: shadowOpacity }}
-                    className="absolute -inset-3 rounded-3xl bg-gradient-to-br from-[#0e2340] to-[#c9a96e] blur-2xl -z-10"
-                  />
-
-                  {/* Visual panel */}
-                  <div className="relative h-[500px]">
-                    <AnimatePresence mode="wait">
-                      <ActiveVisual key={activeVisual} />
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Subtle shimmer overlay on scroll */}
-                  <motion.div
-                    style={{ opacity: shimmerOpacity }}
-                    className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white to-transparent pointer-events-none"
-                  />
-                </motion.div>
-
-                {/* Active feature badge */}
-                <motion.div
-                  key={activeVisual}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35 }}
-                  className="mt-4 flex items-center gap-2"
-                >
-                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-gray-400">
-                    {String(activeVisual + 1).padStart(2, "0")} of {features.length}
-                  </span>
-                  <span className="flex-1 h-px bg-gray-100" />
-                  <motion.span
-                    className="text-[10px] font-semibold text-[#c9a96e] bg-[#c9a96e]/10 border border-[#c9a96e]/20 px-2.5 py-1 rounded-full"
-                    animate={{ opacity: [0.7, 1, 0.7] }}
-                    transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-                  >
-                    {features[activeVisual].label}
-                  </motion.span>
-                </motion.div>
               </div>
             </div>
 
-            {/* RIGHT — scrolling text sections */}
-            {/* pb-[50vh] ensures the last section can scroll to viewport midpoint */}
+            {/* RIGHT — scrolling text */}
+            {/* pb-[50vh] ensures the last section can scroll to the viewport
+                midpoint so the IntersectionObserver stripe can catch it */}
             <div className="pb-[50vh]">
               {features.map((feat, i) => {
                 const Icon = feat.icon;
@@ -894,65 +818,44 @@ export default function LandingPage() {
                   <div
                     key={feat.label}
                     ref={stickyRefs[i]}
-                    className={i < features.length - 1 ? "mb-40" : ""}
+                    className={`transition-all duration-600 ${i < features.length - 1 ? "mb-40" : ""}`}
                   >
                     <motion.div
-                      initial={{ opacity: 0, y: 40 }}
+                      initial={{ opacity: 0, y: 32 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: "-80px" }}
-                      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                      className={`transition-opacity duration-500 ${isActive ? "opacity-100" : "opacity-[0.22]"}`}
+                      viewport={{ once: true, margin: "-60px" }}
+                      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                      className={`transition-opacity duration-500 ${isActive ? "opacity-100" : "opacity-25"}`}
                     >
-                      <motion.p
-                        className="text-[11px] font-bold uppercase tracking-[0.18em] mb-3"
-                        animate={{ color: isActive ? "#c9a96e" : "#9ca3af" }}
-                        transition={{ duration: 0.4 }}
-                      >
+                      <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[var(--gold)] mb-3">
                         {String(i + 1).padStart(2, "0")} — {feat.label}
-                      </motion.p>
+                      </p>
 
-                      <motion.div
-                        animate={{
-                          backgroundColor: isActive ? "#0e2340" : "#f3f4f6",
-                          boxShadow: isActive ? "0 20px 40px -12px rgba(14,35,64,0.2)" : "none",
-                        }}
-                        transition={{ duration: 0.4 }}
-                        className="w-12 h-12 rounded-2xl flex items-center justify-center mb-5"
-                      >
-                        <motion.div animate={{ color: isActive ? "#ffffff" : "#9ca3af" }} transition={{ duration: 0.4 }}>
-                          <Icon className="w-5 h-5" />
-                        </motion.div>
-                      </motion.div>
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 transition-all duration-300 ${isActive ? "bg-[var(--navy)] shadow-xl shadow-[var(--navy)]/20" : "bg-gray-100"}`}>
+                        <Icon className={`w-5.5 h-5.5 transition-colors duration-300 ${isActive ? "text-white" : "text-gray-400"}`} />
+                      </div>
 
                       <h3 className="font-serif text-3xl md:text-4xl text-[var(--navy)] mb-4 font-normal leading-snug">
                         {feat.title}
                       </h3>
                       <p className="text-lg text-gray-500 leading-relaxed">{feat.body}</p>
 
-                      <AnimatePresence>
-                        {isActive && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10, height: 0 }}
-                            animate={{ opacity: 1, y: 0, height: "auto" }}
-                            exit={{ opacity: 0, y: -6, height: 0 }}
-                            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                            className="mt-6 overflow-hidden"
+                      {isActive && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                          className="mt-6"
+                        >
+                          <Link
+                            href="#"
+                            className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--navy)] group"
                           >
-                            <Link
-                              href="#"
-                              className="inline-flex items-center gap-2 text-sm font-semibold text-[var(--navy)] group"
-                            >
-                              Learn more
-                              <motion.span
-                                animate={{ x: [0, 3, 0] }}
-                                transition={{ repeat: Infinity, duration: 1.8, ease: "easeInOut" }}
-                              >
-                                <ArrowRight className="w-4 h-4" />
-                              </motion.span>
-                            </Link>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                            Learn more
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                          </Link>
+                        </motion.div>
+                      )}
 
                       {/* Mobile visual */}
                       <div className="lg:hidden mt-8 relative h-72 rounded-2xl overflow-hidden border border-gray-100 shadow-md bg-[var(--surface)]">
