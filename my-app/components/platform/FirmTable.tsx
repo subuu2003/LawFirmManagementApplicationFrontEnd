@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, MoreVertical, PauseCircle, Trash2, Eye, CheckCircle2, XCircle } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Search, MoreVertical, PauseCircle, Trash2, Eye, CheckCircle2, XCircle, ArrowRight } from 'lucide-react';
 
 type Status = 'Active' | 'Suspended';
 
@@ -30,9 +32,12 @@ const fmt = (n: number) =>
   n >= 100000 ? `₹${(n / 100000).toFixed(1)}L` : `₹${n.toLocaleString('en-IN')}`;
 
 export default function FirmTable() {
+  const pathname = usePathname();
   const [query, setQuery] = useState('');
   const [openMenu, setOpenMenu] = useState<number | null>(null);
   const [firms, setFirms] = useState(mockFirms);
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
 
   const filtered = firms.filter(
     (f) =>
@@ -40,6 +45,9 @@ export default function FirmTable() {
       f.owner.toLowerCase().includes(query.toLowerCase()) ||
       f.code.toLowerCase().includes(query.toLowerCase())
   );
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const paged = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   const toggleStatus = (id: number) =>
     setFirms((prev) =>
@@ -63,7 +71,10 @@ export default function FirmTable() {
           <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setPage(1);
+            }}
             placeholder="Search firms…"
             className="bg-transparent text-sm text-gray-600 placeholder:text-gray-400 outline-none w-full"
           />
@@ -75,7 +86,7 @@ export default function FirmTable() {
         <table className="w-full min-w-[780px]">
           <thead>
             <tr className="border-b border-gray-100 bg-[#f7f8fa]">
-              {['Firm', 'Code', 'Users', 'Cases', 'Pending', 'Paid', 'Status', 'Joined', ''].map((h) => (
+              {['Sl. No', 'Firm', 'Code', 'Users', 'Cases', 'Pending', 'Paid', 'Status', 'Joined', 'View', ''].map((h) => (
                 <th
                   key={h}
                   className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-[0.12em] text-gray-400"
@@ -94,8 +105,11 @@ export default function FirmTable() {
                 </td>
               </tr>
             ) : (
-              filtered.map((firm) => (
+              paged.map((firm, index) => (
                 <tr key={firm.id} className="hover:bg-[#f7f8fa]/60 transition-colors">
+                  <td className="px-5 py-4 text-sm font-semibold text-gray-700">
+                    {(safePage - 1) * pageSize + index + 1}
+                  </td>
                   {/* Firm name + owner */}
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
@@ -146,6 +160,16 @@ export default function FirmTable() {
 
                   <td className="px-5 py-4 text-xs text-gray-400">{firm.joined}</td>
 
+                  <td className="px-5 py-4">
+                    <Link
+                      href={`${pathname}/${firm.id}`}
+                      className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-[#0e2340] hover:bg-gray-50"
+                    >
+                      View
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </td>
+
                   {/* Actions */}
                   <td className="px-5 py-4 relative">
                     <button
@@ -189,18 +213,23 @@ export default function FirmTable() {
 
       {/* Footer */}
       <div className="px-6 py-3 border-t border-gray-100 bg-[#f7f8fa] flex items-center justify-between">
-        <p className="text-xs text-gray-400">Showing {filtered.length} of {firms.length} firms</p>
+        <p className="text-xs text-gray-400">Showing {paged.length} of {filtered.length} firms</p>
         <div className="flex items-center gap-1">
-          {[1, 2, 3].map((n) => (
-            <button
-              key={n}
-              className={`w-7 h-7 rounded-lg text-xs font-semibold transition-colors ${
-                n === 1 ? 'bg-[#0e2340] text-white' : 'text-gray-400 hover:bg-gray-100'
-              }`}
-            >
-              {n}
-            </button>
-          ))}
+          <button
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            className="w-10 h-7 rounded-lg text-xs font-semibold text-gray-500 hover:bg-gray-100"
+          >
+            Prev
+          </button>
+          <span className="px-2 text-xs font-semibold text-gray-500">
+            {safePage} / {pageCount}
+          </span>
+          <button
+            onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
+            className="w-10 h-7 rounded-lg text-xs font-semibold text-gray-500 hover:bg-gray-100"
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>

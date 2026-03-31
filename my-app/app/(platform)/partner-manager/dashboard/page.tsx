@@ -32,9 +32,16 @@ export default function PartnerManagerDashboard() {
             <h2 className="text-sm font-bold text-[#1a6b4a]">Your Assigned Firms</h2>
             <Link href="/partner-manager/firms" className="text-xs font-semibold text-[#1a6b4a] hover:underline">View All</Link>
           </div>
+          <div className="grid grid-cols-[56px_1fr_auto_auto] gap-4 border-b border-gray-100 bg-[#f7f8fa] px-6 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">
+            <span>Sl. No</span>
+            <span>Firm</span>
+            <span>Status</span>
+            <span>View</span>
+          </div>
           <div className="divide-y divide-gray-50">
             {assignedFirms.map((f, i) => (
-              <div key={i} className="flex items-center justify-between px-6 py-4">
+              <div key={i} className="grid grid-cols-[56px_1fr_auto_auto] items-center gap-4 px-6 py-4">
+                <div className="text-sm font-semibold text-gray-600">{i + 1}</div>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-[#1a6b4a] font-bold">
                     {f.name.charAt(0)}
@@ -51,6 +58,13 @@ export default function PartnerManagerDashboard() {
                     {f.status}
                   </span>
                 </div>
+                <Link
+                  href={`/partner-manager/firms/${i + 1}`}
+                  className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-[#1a6b4a] hover:bg-gray-50"
+                >
+                  View
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             ))}
           </div>

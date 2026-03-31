@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ReactNode } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { ArrowRight, Search } from 'lucide-react';
 
 type Tone = 'default' | 'success' | 'warning' | 'danger' | 'info';
@@ -201,33 +201,101 @@ export function ActivityFeed({
 
 export function DocumentHistory({
   rows,
+  viewBase,
 }: {
   rows: Array<{ name: string; type: string; version: string; uploadedBy: string; date: string }>;
+  viewBase?: string;
 }) {
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
+
+  const filteredRows = useMemo(
+    () =>
+      rows
+        .map((row, index) => ({ ...row, rowId: index + 1 }))
+        .filter((row) =>
+          [row.name, row.type, row.version, row.uploadedBy, row.date].some((value) =>
+            value.toLowerCase().includes(query.toLowerCase())
+          )
+        ),
+    [query, rows]
+  );
+
+  const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const pagedRows = filteredRows.slice((safePage - 1) * pageSize, safePage * pageSize);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[620px] text-left">
-        <thead>
-          <tr className="border-b border-gray-100 bg-[#f7f8fa]">
-            {['Document', 'Type', 'Version', 'Uploaded By', 'Date'].map((head) => (
-              <th key={head} className="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">
-                {head}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-50">
-          {rows.map((row) => (
-            <tr key={`${row.name}-${row.version}`}>
-              <td className="px-4 py-4 text-sm font-semibold text-gray-800">{row.name}</td>
-              <td className="px-4 py-4 text-sm text-gray-500">{row.type}</td>
-              <td className="px-4 py-4 text-sm text-gray-500">{row.version}</td>
-              <td className="px-4 py-4 text-sm text-gray-500">{row.uploadedBy}</td>
-              <td className="px-4 py-4 text-sm text-gray-500">{row.date}</td>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 rounded-xl border border-gray-100 bg-[#f7f8fa] px-3 py-2">
+        <Search className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+        <input
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setPage(1);
+          }}
+          placeholder="Search documents..."
+          className="w-full bg-transparent text-sm text-gray-600 outline-none placeholder:text-gray-400"
+        />
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[760px] text-left">
+          <thead>
+            <tr className="border-b border-gray-100 bg-[#f7f8fa]">
+              {['Sl. No', 'Document', 'Type', 'Version', 'Uploaded By', 'Date', 'View'].map((head) => (
+                <th key={head} className="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">
+                  {head}
+                </th>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {pagedRows.map((row, index) => (
+              <tr key={`${row.name}-${row.version}`}>
+                <td className="px-4 py-4 text-sm font-semibold text-gray-700">{(safePage - 1) * pageSize + index + 1}</td>
+                <td className="px-4 py-4 text-sm font-semibold text-gray-800">{row.name}</td>
+                <td className="px-4 py-4 text-sm text-gray-500">{row.type}</td>
+                <td className="px-4 py-4 text-sm text-gray-500">{row.version}</td>
+                <td className="px-4 py-4 text-sm text-gray-500">{row.uploadedBy}</td>
+                <td className="px-4 py-4 text-sm text-gray-500">{row.date}</td>
+                <td className="px-4 py-4">
+                  {viewBase ? (
+                    <Link href={`${viewBase}/${row.rowId}`} className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-[#0e2340] hover:bg-gray-50">
+                      View
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  ) : (
+                    <button className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-[#0e2340] hover:bg-gray-50">
+                      View
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+        <p className="text-xs text-gray-400">Showing {pagedRows.length} of {filteredRows.length} entries</p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+          >
+            Prev
+          </button>
+          <span className="text-xs font-semibold text-gray-500">{safePage} / {pageCount}</span>
+          <button
+            onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
+            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bell, Search, LogOut } from 'lucide-react';
 import { resolveRouteMeta } from '@/components/platform/route-meta';
@@ -38,10 +39,10 @@ export default function SuperAdminTopbar() {
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#984c1f] to-[#e68045] flex items-center justify-center text-white text-xs font-bold">FO</div>
           <span className="text-sm font-semibold text-[#984c1f] hidden sm:block">Firm Owner</span>
         </button>
-        <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors">
+        <Link href="/login" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors">
           <LogOut className="w-3.5 h-3.5" />
           <span className="hidden sm:block">Logout</span>
-        </button>
+        </Link>
       </div>
     </header>
   );

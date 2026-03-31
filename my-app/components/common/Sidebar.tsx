@@ -162,10 +162,10 @@ export default function Sidebar() {
           </button>
         </div>
         <div className="border-t border-gray-100 flex items-center justify-between px-4 py-3">
-          <button className="flex items-center gap-2 text-[#0e2340] hover:opacity-75 transition-opacity">
+          <Link href="/login" className="flex items-center gap-2 text-[#0e2340] hover:opacity-75 transition-opacity">
             <LogOut className="w-4 h-4" />
             <span className="text-[13px] font-semibold">Sign Out</span>
-          </button>
+          </Link>
           <button className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors">
             <ChevronRight className="w-4 h-4 text-gray-400 rotate-180" />
           </button>

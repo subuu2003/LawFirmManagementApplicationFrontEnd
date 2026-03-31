@@ -1,5 +1,10 @@
+'use client';
+
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
 import {
   Activity,
+  ArrowRight,
   Briefcase,
   Building2,
   Calendar,
@@ -55,7 +60,9 @@ type TableColumn = {
   label: string;
 };
 
-type TableRow = Record<string, string>;
+type TableRow = Record<string, string | undefined> & {
+  viewHref?: string;
+};
 
 function MetricGrid({ accent, metrics }: AccentProps & { metrics: Metric[] }) {
   return (
@@ -74,30 +81,99 @@ function DataTable({
   columns: TableColumn[];
   rows: TableRow[];
 }) {
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
+
+  const filteredRows = useMemo(
+    () =>
+      rows.filter((row) =>
+        Object.entries(row)
+          .filter(([key]) => key !== 'viewHref')
+          .some(([, value]) => String(value).toLowerCase().includes(query.toLowerCase()))
+      ),
+    [query, rows]
+  );
+
+  const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const pagedRows = filteredRows.slice((safePage - 1) * pageSize, safePage * pageSize);
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[820px] text-left">
-        <thead>
-          <tr className="border-b border-gray-100 bg-[#f7f8fa]">
-            {columns.map((column) => (
-              <th key={column.key} className="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">
-                {column.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-50">
-          {rows.map((row, index) => (
-            <tr key={index}>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 rounded-xl border border-gray-100 bg-[#f7f8fa] px-3 py-2">
+        <input
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setPage(1);
+          }}
+          placeholder="Search list..."
+          className="w-full bg-transparent text-sm text-gray-600 outline-none placeholder:text-gray-400"
+        />
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[920px] text-left">
+          <thead>
+            <tr className="border-b border-gray-100 bg-[#f7f8fa]">
+              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">Sl. No</th>
               {columns.map((column) => (
-                <td key={column.key} className="px-4 py-4 text-sm text-gray-600">
-                  {row[column.key]}
-                </td>
+                <th key={column.key} className="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">
+                  {column.label}
+                </th>
               ))}
+              <th className="px-4 py-3 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">View</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-50">
+            {pagedRows.map((row, index) => (
+              <tr key={`${row[columns[0].key]}-${index}`}>
+                <td className="px-4 py-4 text-sm font-semibold text-gray-700">{(safePage - 1) * pageSize + index + 1}</td>
+                {columns.map((column) => (
+                  <td key={column.key} className="px-4 py-4 text-sm text-gray-600">
+                    {row[column.key]}
+                  </td>
+                ))}
+                <td className="px-4 py-4">
+                  {row.viewHref ? (
+                    <Link href={row.viewHref} className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-[#0e2340] hover:bg-gray-50">
+                      View
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  ) : (
+                    <button className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-[#0e2340] hover:bg-gray-50">
+                      View
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+        <p className="text-xs text-gray-400">
+          Showing {pagedRows.length} of {filteredRows.length} entries
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+          >
+            Prev
+          </button>
+          <span className="text-xs font-semibold text-gray-500">
+            {safePage} / {pageCount}
+          </span>
+          <button
+            onClick={() => setPage((current) => Math.min(pageCount, current + 1))}
+            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+          >
+            Next
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -383,7 +459,8 @@ export function BillingHubPage({
   accent,
   title,
   description,
-}: AccentProps & { title: string; description: string }) {
+  viewBase,
+}: AccentProps & { title: string; description: string; viewBase?: string }) {
   return (
     <div className="space-y-8">
       <PageSection eyebrow="Billing" title={title} description={description} />
@@ -400,9 +477,9 @@ export function BillingHubPage({
                 { key: 'due', label: 'Due Date' },
               ]}
               rows={[
-                { invoice: 'INV-2041', owner: 'Chen & Associates', amount: 'Rs. 84,000', status: 'Pending', due: '31 Mar 2026' },
-                { invoice: 'INV-2042', owner: 'Torres Law Group', amount: 'Rs. 1,40,000', status: 'Paid', due: '25 Mar 2026' },
-                { invoice: 'INV-2043', owner: 'Davis Legal', amount: 'Rs. 32,000', status: 'Overdue', due: '18 Mar 2026' },
+                { invoice: 'INV-2041', owner: 'Chen & Associates', amount: 'Rs. 84,000', status: 'Pending', due: '31 Mar 2026', viewHref: viewBase ? `${viewBase}/2041` : undefined },
+                { invoice: 'INV-2042', owner: 'Torres Law Group', amount: 'Rs. 1,40,000', status: 'Paid', due: '25 Mar 2026', viewHref: viewBase ? `${viewBase}/2042` : undefined },
+                { invoice: 'INV-2043', owner: 'Davis Legal', amount: 'Rs. 32,000', status: 'Overdue', due: '18 Mar 2026', viewHref: viewBase ? `${viewBase}/2043` : undefined },
               ]}
             />
           </Panel>
@@ -447,7 +524,8 @@ export function CasesPage({
   description,
   primaryHref,
   primaryLabel,
-}: AccentProps & { title: string; description: string; primaryHref?: string; primaryLabel?: string }) {
+  viewBase,
+}: AccentProps & { title: string; description: string; primaryHref?: string; primaryLabel?: string; viewBase?: string }) {
   return (
     <div className="space-y-8">
       <PageSection
@@ -479,7 +557,7 @@ export function CasesPage({
                   { key: 'advocate', label: 'Assigned Advocate' },
                   { key: 'hearing', label: 'Next Hearing' },
                 ]}
-                rows={caseRows}
+                rows={caseRows.map((row, index) => ({ ...row, viewHref: viewBase ? `${viewBase}/${index + 1}` : undefined }))}
               />
             </div>
           </Panel>
@@ -616,7 +694,7 @@ export function CaseDetailPage({
   );
 }
 
-export function TeamPage({ accent }: AccentProps) {
+export function TeamPage({ accent, viewBase }: AccentProps & { viewBase?: string }) {
   return (
     <div className="space-y-8">
       <PageSection eyebrow="Team Management" title="Firm Team Directory" description="Create admins, advocates, and paralegals with role-aware access and workload visibility." actions={<ActionLink href="/super-admin/team/new" label="Add Team Member" />} />
@@ -631,9 +709,9 @@ export function TeamPage({ accent }: AccentProps) {
             { key: 'status', label: 'Status' },
           ]}
           rows={[
-            { name: 'Ritika Iyer', role: 'Advocate', practice: 'Criminal', cases: '18', status: 'Active' },
-            { name: 'S. Nair', role: 'Paralegal', practice: 'Litigation Support', cases: '11', status: 'Active' },
-            { name: 'A. Menon', role: 'Admin', practice: 'Operations', cases: 'All access', status: 'Active' },
+            { name: 'Ritika Iyer', role: 'Advocate', practice: 'Criminal', cases: '18', status: 'Active', viewHref: viewBase ? `${viewBase}/1` : undefined },
+            { name: 'S. Nair', role: 'Paralegal', practice: 'Litigation Support', cases: '11', status: 'Active', viewHref: viewBase ? `${viewBase}/2` : undefined },
+            { name: 'A. Menon', role: 'Admin', practice: 'Operations', cases: 'All access', status: 'Active', viewHref: viewBase ? `${viewBase}/3` : undefined },
           ]}
         />
       </Panel>
@@ -662,7 +740,7 @@ export function TeamMemberFormPage({
   );
 }
 
-export function ClientsPage({ accent }: AccentProps) {
+export function ClientsPage({ accent, viewBase }: AccentProps & { viewBase?: string }) {
   return (
     <div className="space-y-8">
       <PageSection eyebrow="Client Management" title="Client Directory" description="Register, update, and review client records tied to firm matters." actions={<ActionLink href="/super-admin/clients/new" label="Register Client" />} />
@@ -677,8 +755,8 @@ export function ClientsPage({ accent }: AccentProps) {
             { key: 'status', label: 'Status' },
           ]}
           rows={[
-            { client: 'Amit Mehta', matter: 'State vs Mehta', phone: '+91 99XXXXXX12', email: 'amit@example.com', status: 'Active' },
-            { client: 'Nisha Kapoor', matter: 'Property Appeal', phone: '+91 98XXXXXX88', email: 'nisha@example.com', status: 'Pending docs' },
+            { client: 'Amit Mehta', matter: 'State vs Mehta', phone: '+91 99XXXXXX12', email: 'amit@example.com', status: 'Active', viewHref: viewBase ? `${viewBase}/1` : undefined },
+            { client: 'Nisha Kapoor', matter: 'Property Appeal', phone: '+91 98XXXXXX88', email: 'nisha@example.com', status: 'Pending docs', viewHref: viewBase ? `${viewBase}/2` : undefined },
           ]}
         />
       </Panel>
@@ -717,19 +795,55 @@ export function ReportsPage({ accent }: AccentProps) {
   );
 }
 
-export function DocumentLibraryPage({ accent, roleTitle }: AccentProps & { roleTitle: string }) {
+export function DocumentLibraryPage({ accent, roleTitle, viewBase }: AccentProps & { roleTitle: string; viewBase?: string }) {
   return (
     <div className="space-y-8">
       <PageSection eyebrow="Documents" title={`${roleTitle} Document Library`} description="Browse document types, version history, and upload ownership." />
       <SplitPanels
-        left={<Panel title="Document Register" subtitle="FIR, petitions, evidence, orders, agreements, and affidavits."><DocumentHistory rows={documentRows} /></Panel>}
+        left={<Panel title="Document Register" subtitle="FIR, petitions, evidence, orders, agreements, and affidavits."><DocumentHistory rows={documentRows} viewBase={viewBase} /></Panel>}
         right={<InfoAside accent={accent} title="Library Notes" items={['Each document captures upload date and uploader identity.', 'Version history is visible for review and audit.', 'Document type filters are represented in this mock through grouped rows.']} />}
       />
     </div>
   );
 }
 
-export function DraftsPage({ accent, roleTitle, approvalMode }: AccentProps & { roleTitle: string; approvalMode?: boolean }) {
+export function DocumentDetailPage({ accent, roleTitle }: AccentProps & { roleTitle: string }) {
+  return (
+    <div className="space-y-8">
+      <PageSection eyebrow="Document Detail" title={`${roleTitle} Document Detail`} description="Review the selected document, version history, upload ownership, and linked matter context." />
+      <SplitPanels
+        left={
+          <Panel title="Document Overview" subtitle="Metadata, version state, and linked case context.">
+            <DetailList
+              items={[
+                { label: 'Document Name', value: 'FIR Copy' },
+                { label: 'Type', value: 'FIR' },
+                { label: 'Current Version', value: 'v2' },
+                { label: 'Uploaded By', value: 'A. Sharma' },
+                { label: 'Uploaded On', value: '12 Mar 2026' },
+                { label: 'Linked Matter', value: 'State vs Mehta' },
+              ]}
+              columns={2}
+            />
+          </Panel>
+        }
+        right={
+          <InfoAside
+            accent={accent}
+            title="Version Notes"
+            items={[
+              'Version lineage and uploader history are visible for audit review.',
+              'Download, share, and annotation actions can attach here later.',
+              'Client routes stay read-only while internal roles can layer review actions.',
+            ]}
+          />
+        }
+      />
+    </div>
+  );
+}
+
+export function DraftsPage({ accent, roleTitle, approvalMode, viewBase }: AccentProps & { roleTitle: string; approvalMode?: boolean; viewBase?: string }) {
   return (
     <div className="space-y-8">
       <PageSection eyebrow="Drafting" title={`${roleTitle} Draft Workspace`} description={approvalMode ? 'Review draft submissions, approval state, and revision history.' : 'Draft petitions and supporting legal documents for assigned matters.'} />
@@ -745,8 +859,8 @@ export function DraftsPage({ accent, roleTitle, approvalMode }: AccentProps & { 
                 { key: 'updated', label: 'Updated' },
               ]}
               rows={[
-                { draft: 'Bail Petition v4', matter: 'State vs Mehta', owner: 'Ritika Iyer', status: approvalMode ? 'Awaiting approval' : 'In progress', updated: 'Today' },
-                { draft: 'Evidence Synopsis v2', matter: 'Apex Traders Arbitration', owner: 'S. Nair', status: 'Needs revision', updated: 'Yesterday' },
+                { draft: 'Bail Petition v4', matter: 'State vs Mehta', owner: 'Ritika Iyer', status: approvalMode ? 'Awaiting approval' : 'In progress', updated: 'Today', viewHref: viewBase ? `${viewBase}/1` : undefined },
+                { draft: 'Evidence Synopsis v2', matter: 'Apex Traders Arbitration', owner: 'S. Nair', status: 'Needs revision', updated: 'Yesterday', viewHref: viewBase ? `${viewBase}/2` : undefined },
               ]}
             />
           </Panel>
@@ -769,7 +883,7 @@ export function DraftDetailPage({ accent, roleTitle }: AccentProps & { roleTitle
   );
 }
 
-export function InvoicesPage({ accent, roleTitle }: AccentProps & { roleTitle: string }) {
+export function InvoicesPage({ accent, roleTitle, viewBase }: AccentProps & { roleTitle: string; viewBase?: string }) {
   return (
     <div className="space-y-8">
       <PageSection eyebrow="Invoices" title={`${roleTitle} Invoice Center`} description="Review invoice status, payment collection, and follow-up actions." />
@@ -784,8 +898,8 @@ export function InvoicesPage({ accent, roleTitle }: AccentProps & { roleTitle: s
             { key: 'status', label: 'Status' },
           ]}
           rows={[
-            { invoice: 'INV-2041', matter: 'State vs Mehta', client: 'Amit Mehta', amount: 'Rs. 84,000', status: 'Pending' },
-            { invoice: 'INV-2044', matter: 'Property Appeal', client: 'Nisha Kapoor', amount: 'Rs. 41,000', status: 'Paid' },
+            { invoice: 'INV-2041', matter: 'State vs Mehta', client: 'Amit Mehta', amount: 'Rs. 84,000', status: 'Pending', viewHref: viewBase ? `${viewBase}/2041` : undefined },
+            { invoice: 'INV-2044', matter: 'Property Appeal', client: 'Nisha Kapoor', amount: 'Rs. 41,000', status: 'Paid', viewHref: viewBase ? `${viewBase}/2044` : undefined },
           ]}
         />
       </Panel>

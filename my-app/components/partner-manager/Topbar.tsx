@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bell, Search, LogOut } from 'lucide-react';
 import { resolveRouteMeta } from '@/components/platform/route-meta';
@@ -34,10 +35,10 @@ export default function PartnerManagerTopbar() {
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1a6b4a] to-[#2d9d6e] flex items-center justify-center text-white text-xs font-bold">PM</div>
           <span className="text-sm font-semibold text-[#1a6b4a] hidden sm:block">Partner Manager</span>
         </button>
-        <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors">
+        <Link href="/login" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors">
           <LogOut className="w-3.5 h-3.5" />
           <span className="hidden sm:block">Logout</span>
-        </button>
+        </Link>
       </div>
     </header>
   );

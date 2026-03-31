@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { UserCheck, PlusCircle, Search, MoreVertical, CheckCircle2, XCircle, Trash2, PauseCircle, Eye, X, Save } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { UserCheck, PlusCircle, Search, MoreVertical, CheckCircle2, XCircle, Trash2, PauseCircle, Eye, X, Save, ArrowRight } from 'lucide-react';
 
 interface PartnerManager {
   id: number;
@@ -23,17 +25,23 @@ const mock: PartnerManager[] = [
 const emptyForm = { name: '', email: '', phone: '', region: '', username: '', password: '' };
 
 export default function PartnerManagerPage() {
+  const pathname = usePathname();
   const [users, setUsers] = useState(mock);
   const [query, setQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [openMenu, setOpenMenu] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
 
   const filtered = users.filter(u =>
     u.name.toLowerCase().includes(query.toLowerCase()) ||
     u.email.toLowerCase().includes(query.toLowerCase()) ||
     u.region.toLowerCase().includes(query.toLowerCase())
   );
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, pageCount);
+  const paged = filtered.slice((safePage - 1) * pageSize, safePage * pageSize);
 
   const set = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));
 
@@ -138,21 +146,22 @@ export default function PartnerManagerPage() {
           <p className="text-sm font-bold text-[#0e2340]">{users.length} Partner Managers</p>
           <div className="flex items-center gap-2 bg-[#f7f8fa] border border-gray-100 rounded-xl px-3 py-2 w-56">
             <Search className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search managers…" className="bg-transparent text-sm text-gray-600 placeholder:text-gray-400 outline-none w-full" />
+            <input value={query} onChange={e => { setQuery(e.target.value); setPage(1); }} placeholder="Search managers…" className="bg-transparent text-sm text-gray-600 placeholder:text-gray-400 outline-none w-full" />
           </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[640px]">
             <thead>
               <tr className="bg-[#f7f8fa] border-b border-gray-100">
-                {['Manager', 'Email', 'Phone', 'Region', 'Firms', 'Status', 'Joined', ''].map(h => (
+                {['Sl. No', 'Manager', 'Email', 'Phone', 'Region', 'Firms', 'Status', 'Joined', 'View', ''].map(h => (
                   <th key={h} className="px-5 py-3 text-left text-[10px] font-bold uppercase tracking-widest text-gray-400">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filtered.map(u => (
+              {paged.map((u, index) => (
                 <tr key={u.id} className="hover:bg-[#f7f8fa]/60 transition-colors">
+                  <td className="px-5 py-3.5 text-sm font-semibold text-gray-700">{(safePage - 1) * pageSize + index + 1}</td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-[#6C5CE7]/10 flex items-center justify-center text-[#6C5CE7] text-[11px] font-bold shrink-0">
@@ -176,6 +185,15 @@ export default function PartnerManagerPage() {
                     </span>
                   </td>
                   <td className="px-5 py-3.5 text-xs text-gray-400">{u.joinedAt}</td>
+                  <td className="px-5 py-3.5">
+                    <Link
+                      href={`${pathname}/${u.id}`}
+                      className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-[#0e2340] hover:bg-gray-50"
+                    >
+                      View
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </td>
                   <td className="px-5 py-3.5 relative">
                     <button onClick={() => setOpenMenu(openMenu === u.id ? null : u.id)} className="w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center">
                       <MoreVertical className="w-4 h-4 text-gray-400" />
@@ -195,7 +213,14 @@ export default function PartnerManagerPage() {
           </table>
         </div>
         <div className="px-6 py-3 border-t border-gray-100 bg-[#f7f8fa]">
-          <p className="text-xs text-gray-400">Showing {filtered.length} of {users.length} entries</p>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-gray-400">Showing {paged.length} of {filtered.length} entries</p>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setPage((current) => Math.max(1, current - 1))} className="rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-500 hover:bg-gray-100">Prev</button>
+              <span className="text-xs font-semibold text-gray-500">{safePage} / {pageCount}</span>
+              <button onClick={() => setPage((current) => Math.min(pageCount, current + 1))} className="rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-500 hover:bg-gray-100">Next</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

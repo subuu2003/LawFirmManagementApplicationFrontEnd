@@ -8,6 +8,7 @@ export default function SuperAdminCasesPage() {
       description="Create and manage matters, assign advocates and paralegals, monitor act extraction, and review case lifecycle history."
       primaryHref="/super-admin/cases/new"
       primaryLabel="Create New Case"
+      viewBase="/super-admin/cases"
     />
   );
 }

@@ -54,10 +54,10 @@ export default function ParalegalSidebar() {
         })}
       </nav>
       <div className="border-t border-gray-100 px-4 py-3">
-        <button className="flex items-center gap-2 text-red-500 hover:opacity-75 transition-opacity px-2">
+        <Link href="/login" className="flex items-center gap-2 text-red-500 hover:opacity-75 transition-opacity px-2">
           <LogOut className="w-4 h-4" />
           <span className="text-[13px] font-semibold">Sign Out</span>
-        </button>
+        </Link>
       </div>
     </aside>
   );

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Bell, Search, LogOut, User } from 'lucide-react';
 
@@ -52,10 +53,10 @@ export default function Topbar() {
         </button>
 
         {/* Logout */}
-        <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors">
+        <Link href="/login" className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors">
           <LogOut className="w-3.5 h-3.5" />
           <span className="hidden sm:block">Logout</span>
-        </button>
+        </Link>
       </div>
     </header>
   );
