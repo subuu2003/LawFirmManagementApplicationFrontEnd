@@ -80,10 +80,32 @@ export default function LoginPage() {
       // Mock login for demonstration
       await new Promise(resolve => setTimeout(resolve, 1000));
 
+      let userRole = '';
+      const email = formData.email.toLowerCase();
+      const password = formData.password;
+
+      if (email === 'platformowner@lawfirm.com' && password === 'platformowner') {
+        userRole = 'platform_owner';
+      } else if (email === 'partnermanager@lawfirm.com' && password === 'partnermanager') {
+        userRole = 'partner_manager';
+      } else if (email === 'firmowner@lawfirm.com' && password === 'firmowner') {
+        userRole = 'firm_owner';
+      } else if (email === 'firmadmin@lawfirm.com' && password === 'firmadmin') {
+        userRole = 'firm_admin';
+      } else if (email === 'advocate@lawfirm.com' && password === 'advocate') {
+        userRole = 'advocate';
+      } else if (email === 'paralegal@lawfirm.com' && password === 'paralegal') {
+        userRole = 'paralegal';
+      } else if (email === 'client@lawfirm.com' && password === 'client') {
+        userRole = 'client';
+      } else {
+        throw new Error('Invalid credentials. Please use one of the demo accounts.');
+      }
+
       // Mock user role - replace with actual user data from your API
       const mockUser = {
-        role: 'platform_owner',
-        name: 'John Doe',
+        role: userRole,
+        name: 'Demo User',
       };
 
       // Redirect based on user role
