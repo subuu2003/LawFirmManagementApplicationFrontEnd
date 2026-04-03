@@ -1,24 +1,45 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Scale, LayoutDashboard, Briefcase, FileText,
-  UserCheck, Bell, MessageSquare, LogOut, ChevronRight
+  UserCheck, Bell, MessageSquare, LogOut, ChevronRight, Users, ChevronDown
 } from 'lucide-react';
 
-const navItems = [
+const topNavItems = [
   { label: 'Dashboard',    path: '/firm-admin/dashboard', icon: LayoutDashboard },
   { label: 'Cases',        path: '/firm-admin/cases',     icon: Briefcase },
   { label: 'Documents',    path: '/firm-admin/documents', icon: FileText },
   { label: 'Drafts',       path: '/firm-admin/drafts',    icon: UserCheck },
+];
+
+const userSubItems = [
+  { label: 'Advocate', path: '/firm-admin/users/advocate', icon: Briefcase },
+  { label: 'Paralegal', path: '/firm-admin/users/paralegal', icon: FileText },
+  { label: 'Client', path: '/firm-admin/users/client', icon: Users },
+];
+
+const bottomNavItems = [
   { label: 'Invoices',     path: '/firm-admin/invoices',  icon: FileText },
   { label: 'Messaging',    path: '/firm-admin/messaging', icon: MessageSquare },
 ];
 
 export default function FirmAdminSidebar() {
   const pathname = usePathname();
+  const [userMenuOpen, setUserMenuOpen] = useState(
+    () => pathname.startsWith('/firm-admin/users')
+  );
+
+  useEffect(() => {
+    if (pathname.startsWith('/firm-admin/users')) {
+      setUserMenuOpen(true);
+    }
+  }, [pathname]);
+
   const isActive = (path: string) => pathname.startsWith(path);
+  const userSectionActive = pathname.startsWith('/firm-admin/users');
 
   const navRow = (active: boolean) =>
     `group relative flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
@@ -50,7 +71,62 @@ export default function FirmAdminSidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
-        {navItems.map(({ label, path, icon: Icon }) => {
+        {topNavItems.map(({ label, path, icon: Icon }) => {
+          const active = isActive(path);
+          return (
+            <Link key={path} href={path}>
+              <div className={navRow(active)}>
+                {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[22px] rounded-r-full bg-[#2a4365]" />}
+                <div className="flex items-center gap-3">
+                  <div className={iconBox(active)}><Icon className={iconColor(active)} /></div>
+                  <span className="text-sm font-semibold">{label}</span>
+                </div>
+                {active && <ChevronRight className="w-3.5 h-3.5 text-[#2a4365]/40" />}
+              </div>
+            </Link>
+          );
+        })}
+
+        {/* User Management */}
+        <div>
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); setUserMenuOpen((o) => !o); }}
+            className={navRow(userSectionActive) + ' w-full'}
+          >
+            {userSectionActive && (
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[22px] rounded-r-full bg-[#2a4365]" />
+            )}
+            <div className="flex items-center gap-3">
+              <div className={iconBox(userSectionActive)}>
+                <Users className={iconColor(userSectionActive)} />
+              </div>
+              <span className="text-sm font-semibold">User Management</span>
+            </div>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${userMenuOpen ? 'rotate-180 text-[#2a4365]' : 'text-gray-300'}`} />
+          </button>
+
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${userMenuOpen ? 'max-h-52 opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="ml-[22px] mt-1 mb-1 border-l-2 border-[#2a4365]/15 pl-3.5 space-y-0.5">
+              {userSubItems.map(({ label, path, icon: Icon }) => {
+                const active = pathname.startsWith(path);
+                return (
+                  <Link key={path} href={path}>
+                    <div className={`group flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 cursor-pointer ${
+                      active ? 'bg-[#2a4365]/10 text-[#2a4365]' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-700'
+                    }`}>
+                      <Icon className={`w-3.5 h-3.5 shrink-0 ${active ? 'text-[#2a4365]' : 'text-gray-300 group-hover:text-gray-500'}`} />
+                      <span className={`text-[13px] font-semibold ${active ? 'text-[#2a4365]' : ''}`}>{label}</span>
+                      {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#2a4365]" />}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {bottomNavItems.map(({ label, path, icon: Icon }) => {
           const active = isActive(path);
           return (
             <Link key={path} href={path}>

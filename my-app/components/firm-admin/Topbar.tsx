@@ -1,7 +1,9 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bell, Search } from 'lucide-react';
+import { Bell, Search, LogOut, Settings } from 'lucide-react';
 import { resolveRouteMeta } from '@/components/platform/route-meta';
 
 const pageTitles = [
@@ -16,6 +18,18 @@ const pageTitles = [
 export default function FirmAdminTopbar() {
   const pathname = usePathname();
   const page = resolveRouteMeta(pathname, pageTitles, { title: 'Admin Dashboard', sub: 'Manage cases and coordinate firm operations.' });
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   return (
     <header className="h-[72px] bg-white border-b border-gray-100 flex items-center justify-between px-8 shrink-0 sticky top-0 z-10">
       <div>
@@ -32,10 +46,38 @@ export default function FirmAdminTopbar() {
           <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#2a4365] border-2 border-white" />
         </button>
         <div className="w-px h-6 bg-gray-100 mx-1" />
-        <button className="flex items-center gap-2.5 pl-1 pr-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors">
-          <div className="w-8 h-8 rounded-full bg-[#2a4365] flex items-center justify-center text-white text-xs font-bold">FA</div>
-          <span className="text-sm font-semibold text-[#2a4365] hidden sm:block">Firm Admin</span>
-        </button>
+        {/* Profile Dropdown */}
+        <div className="relative" ref={profileRef}>
+          <button 
+            onClick={() => setIsProfileOpen(!isProfileOpen)}
+            className="flex items-center gap-2.5 pl-1 pr-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-[#2a4365] flex items-center justify-center text-white text-xs font-bold">FA</div>
+            <span className="text-sm font-semibold text-[#2a4365] hidden sm:block">Firm Admin</span>
+          </button>
+
+          {isProfileOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50">
+              <Link 
+                href="/firm-admin/settings" 
+                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                onClick={() => setIsProfileOpen(false)}
+              >
+                <Settings className="w-4 h-4" />
+                Settings
+              </Link>
+              <div className="h-px bg-gray-100 my-1" />
+              <Link 
+                href="/login" 
+                className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                onClick={() => setIsProfileOpen(false)}
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

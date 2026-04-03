@@ -1,17 +1,26 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Scale, LayoutDashboard, Users,
-  Settings, ChevronRight, LogOut, Briefcase, FileText, CreditCard, BarChart2,
+  Settings, ChevronRight, LogOut, Briefcase, FileText, CreditCard, BarChart2, ChevronDown, UserCheck
 } from 'lucide-react';
 
-const navItems = [
+const topNavItems = [
   { label: 'Dashboard', path: '/super-admin/dashboard', icon: LayoutDashboard },
   { label: 'Cases',     path: '/super-admin/cases',     icon: Briefcase       },
-  { label: 'Team',      path: '/super-admin/team',      icon: Users           },
-  { label: 'Clients',   path: '/super-admin/clients',   icon: Users           },
+];
+
+const userSubItems = [
+  { label: 'Admin', path: '/super-admin/users/admin', icon: UserCheck },
+  { label: 'Advocate', path: '/super-admin/users/advocate', icon: Briefcase },
+  { label: 'Paralegal', path: '/super-admin/users/paralegal', icon: FileText },
+  { label: 'Client', path: '/super-admin/users/client', icon: Users },
+];
+
+const bottomNavItems = [
   { label: 'Billing',   path: '/super-admin/billing',   icon: CreditCard      },
   { label: 'Reports',   path: '/super-admin/reports',   icon: BarChart2       },
   { label: 'Settings',  path: '/super-admin/settings',  icon: Settings        },
@@ -19,7 +28,18 @@ const navItems = [
 
 export default function SuperAdminSidebar() {
   const pathname = usePathname();
+  const [userMenuOpen, setUserMenuOpen] = useState(
+    () => pathname.startsWith('/super-admin/users')
+  );
+
+  useEffect(() => {
+    if (pathname.startsWith('/super-admin/users')) {
+      setUserMenuOpen(true);
+    }
+  }, [pathname]);
+
   const isActive = (path: string) => pathname.startsWith(path);
+  const userSectionActive = pathname.startsWith('/super-admin/users');
 
   const navRow = (active: boolean) =>
     `group relative flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer ${
@@ -51,7 +71,62 @@ export default function SuperAdminSidebar() {
       </div>
 
       <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto">
-        {navItems.map(({ label, path, icon: Icon }) => {
+        {topNavItems.map(({ label, path, icon: Icon }) => {
+          const active = isActive(path);
+          return (
+            <Link key={path} href={path}>
+              <div className={navRow(active)}>
+                {active && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[22px] rounded-r-full bg-[#984c1f]" />}
+                <div className="flex items-center gap-3">
+                  <div className={iconBox(active)}><Icon className={iconColor(active)} /></div>
+                  <span className="text-sm font-semibold">{label}</span>
+                </div>
+                {active && <ChevronRight className="w-3.5 h-3.5 text-[#984c1f]/40" />}
+              </div>
+            </Link>
+          );
+        })}
+
+        {/* User Management */}
+        <div>
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); setUserMenuOpen((o) => !o); }}
+            className={navRow(userSectionActive) + ' w-full'}
+          >
+            {userSectionActive && (
+              <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[22px] rounded-r-full bg-[#984c1f]" />
+            )}
+            <div className="flex items-center gap-3">
+              <div className={iconBox(userSectionActive)}>
+                <Users className={iconColor(userSectionActive)} />
+              </div>
+              <span className="text-sm font-semibold">User Management</span>
+            </div>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${userMenuOpen ? 'rotate-180 text-[#984c1f]' : 'text-gray-300'}`} />
+          </button>
+
+          <div className={`overflow-hidden transition-all duration-300 ease-in-out ${userMenuOpen ? 'max-h-52 opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="ml-[22px] mt-1 mb-1 border-l-2 border-[#984c1f]/15 pl-3.5 space-y-0.5">
+              {userSubItems.map(({ label, path, icon: Icon }) => {
+                const active = pathname.startsWith(path);
+                return (
+                  <Link key={path} href={path}>
+                    <div className={`group flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150 cursor-pointer ${
+                      active ? 'bg-[#984c1f]/10 text-[#984c1f]' : 'text-gray-400 hover:bg-gray-50 hover:text-gray-700'
+                    }`}>
+                      <Icon className={`w-3.5 h-3.5 shrink-0 ${active ? 'text-[#984c1f]' : 'text-gray-300 group-hover:text-gray-500'}`} />
+                      <span className={`text-[13px] font-semibold ${active ? 'text-[#984c1f]' : ''}`}>{label}</span>
+                      {active && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#984c1f]" />}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {bottomNavItems.map(({ label, path, icon: Icon }) => {
           const active = isActive(path);
           return (
             <Link key={path} href={path}>
