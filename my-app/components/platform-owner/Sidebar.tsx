@@ -67,7 +67,7 @@ export default function Sidebar() {
             <Scale className="w-4 h-4 text-white" />
           </div>
           <span className="font-bold text-lg text-gray-900 tracking-tight">
-            Lex<span className="text-[#0e2340]">Manage</span>
+            Nyaya <span className="text-[#0e2340]">Setu</span>
           </span>
         </div>
         <div className="mt-3">
@@ -163,7 +163,7 @@ export default function Sidebar() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-gray-900 truncate">Platform Owner</p>
-            <p className="text-[10px] text-gray-400 truncate">owner@lexmanage.com</p>
+            <p className="text-[10px] text-gray-400 truncate">owner@nyayasetu.com</p>
           </div>
           <button className="w-7 h-7 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors shrink-0">
             <Settings className="w-3.5 h-3.5 text-gray-400" />

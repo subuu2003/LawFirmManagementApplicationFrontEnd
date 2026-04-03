@@ -37,7 +37,7 @@ export default function PartnerManagerSidebar() {
             <Scale className="w-4 h-4 text-white" />
           </div>
           <span className="font-bold text-lg text-gray-900 tracking-tight">
-            Lex<span className="text-[#1a6b4a]">Manage</span>
+            Nyaya <span className="text-[#1a6b4a]">Setu</span>
           </span>
         </div>
         <div className="mt-3">
@@ -72,7 +72,7 @@ export default function PartnerManagerSidebar() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-gray-900 truncate">Partner Manager</p>
-            <p className="text-[10px] text-gray-400 truncate">partner@lexmanage.com</p>
+            <p className="text-[10px] text-gray-400 truncate">partner@nyayasetu.com</p>
           </div>
         </div>
         <div className="border-t border-gray-100 px-4 py-3">

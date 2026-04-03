@@ -166,7 +166,7 @@ export default function LoginPage() {
           <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm border border-white/20">
             <Scale className="w-5 h-5 text-white" />
           </div>
-          <span className="font-bold text-xl tracking-tight">LexManage</span>
+          <span className="font-bold text-xl tracking-tight">Nyaya Setu</span>
         </motion.div>
 
         {/* Testimonial / Trust Section */}
@@ -192,7 +192,7 @@ export default function LoginPage() {
             </div>
 
             <blockquote className="text-lg font-medium leading-relaxed mb-6">
-              "LexManage has transformed how we run our practice. From case management to client billing, everything is streamlined. Our productivity has increased by 40%."
+              "Nyaya Setu has transformed how we run our practice. From case management to client billing, everything is streamlined. Our productivity has increased by 40%."
             </blockquote>
 
             <div className="flex items-center gap-4">
@@ -228,7 +228,7 @@ export default function LoginPage() {
         </motion.div>
 
         <div className="relative z-10 text-xs text-white/60">
-          © 2026 LexManage Inc. All rights reserved.
+          © 2026 Nyaya Setu Inc. All rights reserved.
         </div>
       </div>
 
@@ -245,7 +245,7 @@ export default function LoginPage() {
             <div className="w-8 h-8 bg-[#1e3a5f] rounded-lg flex items-center justify-center text-white">
               <Scale className="w-4 h-4" />
             </div>
-            <span className="font-bold text-lg text-slate-900">LexManage</span>
+            <span className="font-bold text-lg text-slate-900">Nyaya Setu</span>
           </div>
 
           {/* Header */}
@@ -422,12 +422,12 @@ export default function LoginPage() {
           <p className="mt-2 text-xs text-slate-400">
             Powered by{' '}
             <a
-              href="https://diracai.com/"
+              href="http://anthemgt.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-[#1e3a5f] hover:text-[#0f2b44] transition-colors"
             >
-              DiracAI
+              Anthem
             </a>
           </p>
         </div>

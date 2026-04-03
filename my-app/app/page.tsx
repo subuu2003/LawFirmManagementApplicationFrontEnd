@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring, useScroll, useMotionValueEvent } from "framer-motion";
 import {
   Scale, ArrowRight, Play, Menu, X, Users, Brain, Calendar,
   CreditCard, Upload, FileSignature, Clock, Shield, Zap,
@@ -221,13 +221,12 @@ function Visual3() {
           ) : (
             <div
               key={`d${day}`}
-              className={`relative py-1 rounded-lg text-[11px] font-medium transition-all ${
-                day === today
+              className={`relative py-1 rounded-lg text-[11px] font-medium transition-all ${day === today
                   ? "bg-[#0e2340] text-white"
                   : evt
-                  ? "bg-[#0e2340]/6 text-[#0e2340]"
-                  : "text-gray-400 hover:bg-gray-50"
-              }`}
+                    ? "bg-[#0e2340]/6 text-[#0e2340]"
+                    : "text-gray-400 hover:bg-gray-50"
+                }`}
             >
               {day}
               {evt && day !== today && (
@@ -281,10 +280,11 @@ export default function LandingPage() {
 
   // ── Scroll & Mouse Motion Values ──────────────────────────────────────────
   const featureSectionRef = useRef<HTMLElement>(null);
-  const scrollProgress = useMotionValue(0);
   
-  const rawNudge = useTransform(scrollProgress, [0, 0.5, 1], [80, 0, -80]);
-  const cardY = useSpring(rawNudge, { stiffness: 45, damping: 18, mass: 1.2 });
+  const { scrollYProgress: featureScrollY } = useScroll({
+    target: featureSectionRef,
+    offset: ["start start", "end end"]
+  });
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -296,68 +296,36 @@ export default function LandingPage() {
   const translateX = useTransform(smoothMouseX, [-200, 200], [-10, 10]);
   const translateY = useTransform(smoothMouseY, [-200, 200], [-10, 10]);
 
-  useEffect(() => {
-    let ticking = false;
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          if (window.innerWidth >= 1024 && featureSectionRef.current) {
-            const rect = featureSectionRef.current.getBoundingClientRect();
-            const progress = (-rect.top) / (rect.height - window.innerHeight);
-            const clamped = Math.min(1, Math.max(0, progress));
-            scrollProgress.set(clamped);
-          }
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    handleScroll();
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-    };
-  }, [scrollProgress]);
-
   // ── Sticky scroll: one ref per text section ──────────────────────────────
   const section1Ref = useRef<HTMLDivElement>(null);
   const section2Ref = useRef<HTMLDivElement>(null);
   const section3Ref = useRef<HTMLDivElement>(null);
   const stickyRefs = [section1Ref, section2Ref, section3Ref];
 
-  // Rock-solid observer: fires on the element whose centre is closest to the
-  // viewport midpoint. Uses rootMargin to create a narrow horizontal "stripe"
-  // at 50% of the viewport height so exactly one section is active at a time.
-  useEffect(() => {
-    const observers: IntersectionObserver[] = [];
-    const refs = [section1Ref, section2Ref, section3Ref];
+  const { scrollY } = useScroll();
+  const activeVisualRef = useRef(0);
+  
+  useMotionValueEvent(scrollY, "change", () => {
+    let closestIndex = 0;
+    let minDistance = Infinity;
+    const center = window.innerHeight / 2;
 
-    refs.forEach((ref, i) => {
-      if (!ref.current) return;
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          // Only set active when this section IS intersecting; never clear it.
-          // The last section to become intersecting wins — exactly what we want.
-          if (entry.isIntersecting) setActiveVisual(i);
-        },
-        {
-          // A narrow stripe in the vertical centre of the viewport.
-          rootMargin: "-45% 0px -45% 0px",
-          threshold: 0,
+    stickyRefs.forEach((ref, index) => {
+      if (ref.current) {
+        const rect = ref.current.getBoundingClientRect();
+        const dist = Math.abs(rect.top + rect.height / 2 - center);
+        if (dist < minDistance) {
+          minDistance = dist;
+          closestIndex = index;
         }
-      );
-      obs.observe(ref.current);
-      observers.push(obs);
+      }
     });
 
-    return () => observers.forEach((obs) => obs.disconnect());
-  }, []);
+    if (closestIndex !== activeVisualRef.current) {
+      activeVisualRef.current = closestIndex;
+      setActiveVisual(closestIndex);
+    }
+  });
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -456,11 +424,10 @@ export default function LandingPage() {
       `}</style>
 
       {/* ── NAV ───────────────────────────────── */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-400 ${
-        scrolled
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-400 ${scrolled
           ? "bg-white/96 backdrop-blur-2xl shadow-[0_1px_0_0_rgba(14,35,64,0.08)]"
           : "bg-transparent"
-      }`}>
+        }`}>
         <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
             <motion.div
@@ -471,7 +438,7 @@ export default function LandingPage() {
               <Scale className="w-4.5 h-4.5 text-white" />
             </motion.div>
             <span className="font-bold text-xl tracking-tight text-[var(--navy)]">
-              Lex<span className="text-[var(--gold)]">Manage</span>
+              Nyaya <span className="text-[var(--gold)]">Setu</span>
             </span>
           </Link>
 
@@ -489,7 +456,7 @@ export default function LandingPage() {
               ))}
             </div>
             <div className="flex items-center gap-2 pl-4 border-l border-gray-100">
-              
+
               <Link
                 href="/login"
                 className="bg-[var(--navy)] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[var(--navy-mid)] hover:shadow-lg hover:shadow-[var(--navy)]/20 transition-all"
@@ -539,7 +506,7 @@ export default function LandingPage() {
           <svg className="absolute inset-0 w-full h-full opacity-[0.09]" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#0e2340" strokeWidth="1"/>
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#0e2340" strokeWidth="1" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
@@ -633,7 +600,7 @@ export default function LandingPage() {
                   </div>
                   <div className="flex-1 bg-white rounded-md px-3 py-1 flex items-center gap-2">
                     <Lock className="w-3 h-3 text-gray-400" />
-                    <span className="text-xs text-gray-400">dashboard.lexmanage.com</span>
+                    <span className="text-xs text-gray-400">dashboard.nyayasetu.com</span>
                   </div>
                 </div>
 
@@ -780,9 +747,9 @@ export default function LandingPage() {
 
                 {/* Visual card container */}
                 <div className="relative h-[500px]">
-                  <motion.div style={{ y: cardY }} className="w-full h-full">
-                    <motion.div 
-                      style={{ rotateX, rotateY, translateX, translateY }} 
+                  <div className="w-full h-full">
+                    <motion.div
+                      style={{ rotateX, rotateY, translateX, translateY }}
                       className="w-full h-full"
                       onMouseMove={(e) => {
                         if (window.innerWidth < 1024) return;
@@ -802,7 +769,7 @@ export default function LandingPage() {
                         <ActiveVisual key={activeVisual} />
                       </AnimatePresence>
                     </motion.div>
-                  </motion.div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -880,7 +847,7 @@ export default function LandingPage() {
           <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="grid2" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1"/>
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid2)" />
@@ -1086,7 +1053,7 @@ export default function LandingPage() {
               {
                 name: "Sarah Chen, Esq.",
                 role: "Managing Partner, Chen & Associates",
-                content: "LexManage transformed how we run our practice. Everything is streamlined — our productivity has increased by 40% since we switched.",
+                content: "Nyaya Setu transformed how we run our practice. Everything is streamlined — our productivity has increased by 40% since we switched.",
                 rating: 5,
                 highlight: "40% productivity increase",
               },
@@ -1152,7 +1119,7 @@ export default function LandingPage() {
             <svg className="absolute inset-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <pattern id="grid3" width="40" height="40" patternUnits="userSpaceOnUse">
-                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1"/>
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
                 </pattern>
               </defs>
               <rect width="100%" height="100%" fill="url(#grid3)" />
@@ -1164,7 +1131,7 @@ export default function LandingPage() {
                 Ready to Modernize<br />Your Law Firm?
               </h2>
               <p className="text-lg text-white/60 mb-10 max-w-xl mx-auto">
-                Join hundreds of law firms that have transformed their practice with LexManage
+                Join hundreds of law firms that have transformed their practice with Nyaya Setu
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
                 <Link
@@ -1193,7 +1160,7 @@ export default function LandingPage() {
                 <div className="w-8 h-8 bg-white/8 rounded-lg flex items-center justify-center">
                   <Scale className="w-4 h-4 text-white" />
                 </div>
-                <span className="font-bold text-lg text-white">Lex<span className="text-[var(--gold)]">Manage</span></span>
+                <span className="font-bold text-lg text-white">Nyaya <span className="text-[var(--gold)]">Setu</span></span>
               </div>
               <p className="text-sm text-gray-500 max-w-xs leading-relaxed mb-5">
                 The complete practice management platform for modern law firms. AI-powered, secure, and built for efficiency.
@@ -1240,7 +1207,20 @@ export default function LandingPage() {
           </div>
 
           <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-gray-600">© 2026 LexManage Inc. All rights reserved.</p>
+            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-6">
+              <p className="text-xs text-gray-600">© 2026 Nyaya Setu Inc. All rights reserved.</p>
+              <p className="text-xs text-gray-600">
+                Powered by{' '}
+                <a
+                  href="http://anthemgt.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-gray-400 hover:text-white transition-colors"
+                >
+                  Anthem
+                </a>
+              </p>
+            </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs text-gray-600">All systems operational</span>
